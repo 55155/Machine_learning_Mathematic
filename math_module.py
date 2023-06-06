@@ -97,11 +97,67 @@ def chain_deriv_3(chain:Chain, x:ndarray):
     return df1_dx * df2_df1 * df3_df2
 
 # 변수가 두개인 경우 합성 함수
+# sigma(a(x,y))
+
 def multi_inputs_add(x:ndarray, y:ndarray, sigma:Array_Function)->float:
     assert x.shape == y.shape # 
     a = x+y
 
     return sigma(a)
+
+def multiple_inputs_add_backward(x:ndarray, y:ndarray, sigma:Array_Function)->float:
+    a = x+y
+    s = sigma(a)
+    dsda = deriv(sigma, a)
+
+    dadx = 1
+    dady = 1
+
+    return dsda * dadx, dsda * dady
+
+def matmul_forward(X:ndarray, W:ndarray):
+    assert X.shape[1] == W.shape[0]
+    "행렬곱 규칙"
+    return np.dot(X,W)
+
+def matmul_backward_first(X:ndarray, W:ndarray):
+    # W를 transpose 해주면 X와 shape 이 같아지고 X의 변화량을 고려할 수 있음
+    dNdX = np.transpose(W,(1,0))
+
+    return dNdX
+
+def matrix_function_backward_1(X:ndarray, W:ndarray, sigma:Array_Function): 
+    # 레이어 구성
+    # 입력층 : X
+    # 레이어1 : matrix multiple -> N
+    # 출력층 : activation function -> S 
+    N = np.dot(X,W)
+    S = sigma(N)
+
+    dSdN = deriv(sigma, N) # Array_Function, ndarray
+    dNdX = np.transpose(W, (1,0))
+
+    return dSdN * dNdX
+
+def matrix_function_forward_sum(X:ndarray, W:ndarray, sigma:Array_Function)->float:
+    assert X.shape[0] == W.shape[1], \
+    "행렬곱 규칙"
+    N = np.dot(X,W)
+    S = sigma(N)
+    L = np.sum(S)
+    return L
+
+def matrix_function_backward_sum(X:ndarray, W:ndarray, sigma:Array_Function)->float:
+    N = np.dot(X,W)
+    S = sigma(N)
+    L = np.sum(S)
+
+    dLdS = np.ones_like(L)
+    dSdN = deriv(sigma, N) # func(input + delta) + func(input + delta) / (2*delta)
+    dNdX = np.transpose(W, (1,0))
+
+    return dLdS * dSdN * dNdX
+
 
 if __name__ == '__main__':
   
