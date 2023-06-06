@@ -40,3 +40,7 @@ class ParamOperation(Operation):
         return self.input_grad
     def _param_grad(self):
         raise NotImplementedError()
+
+class BiasAdd(ParamOperation):
+    def __init__(self):
+        pass
