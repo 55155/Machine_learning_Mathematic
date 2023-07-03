@@ -82,3 +82,38 @@ class BiasAdd(ParamOperation):
     def _param_grad(self, output_grad:ndarray)->ndarray:
         param_grad = np.ones_like(self.param) * output_grad
         #
+        return np.sum(param_grad).reshape(1, param_grad[1])
+
+
+class Loss():
+    def __init__(self):
+        pass
+    def forward(self,prediction:ndarray, target:ndarray):
+        self.prediction = prediction
+        self.target = target
+        self.output_ = self.output()     
+        return self.output
+    
+    def backward(self):
+        self.input_grad = self.input_grad_()
+        assert self.input_grad == self.prediction
+        return self.input_grad
+
+    def output(self):
+        raise NotImplementedError()
+    
+    def input_grad_(self):
+        raise NotImplementedError()
+
+class MSE(Loss):
+    def __init__(self):
+        super().__init__()
+
+    def output(self):
+        loss = np.mean((self.prediction - self.target) ** 2)
+        return loss
+
+    def input_grad_(self):
+        # 평균을 구하는 이유는 shape이 1로 나와야한다. 
+        return np.mean(2*self.target - 2 * self.prediction)
+    
