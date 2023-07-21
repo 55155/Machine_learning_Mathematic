@@ -127,6 +127,26 @@ def _input_grad_1d(inp: ndarray,
     
     return input_grad
 
+def _pad_1d_batch(inp: ndarray, 
+                  num: int) -> ndarray:
+    outs = [_pad_1d(obs, num) for obs in inp]
+    return np.stack(outs)
+
+def conv_1d_batch(inp:ndarray, param:ndarray) -> ndarray:
+    outs = [conv_1d(obs, param) for obs in inp]
+    return np.stack(outs)
+
+def input_grad_1d_batch(inp:ndarray, param:ndarray)->ndarray:
+    out = conv_1d_batch(inp, param)
+    out_grad = np.ones_like(out)
+    batch_size = out_grad.shape[0]
+    grads = [_input_grad_1d(inp[i], param, out_grad[i]) for i in range(batch_size)]
+
+    return np.stack(grads)
+
+def param_grad_1d_batch(inp:ndarray, param:ndarray)->ndarray:
+    output_grad = np.ones_like(param)
+    
 
 if __name__ == '__main__':
     input_1d_2 = np.array([1,2,3,4,6])
@@ -145,4 +165,7 @@ if __name__ == '__main__':
     print(_pad_1d(input_1d, 1))
     print(conv_1d(input_1d, param_1d))
 
-    input_1d_batch = np.array([[0,1,2,3,4,5,6], [1,2,3,4,5,6,7]])
+    input_1d_batch = np.array([[0,1,2,3,4,5,6], 
+                                [1,2,3,4,5,6,7]])
+
+    print(conv_1d_batch(input_1d_batch, param_1d))
